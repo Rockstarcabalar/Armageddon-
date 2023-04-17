@@ -1,0 +1,98 @@
+import pygame
+import random
+
+# initialize Pygame
+pygame.init()
+
+# set up game window
+WINDOW_WIDTH = 800
+WINDOW_HEIGHT = 600
+game_window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+pygame.display.set_caption("Apocalypse Survival")
+
+# set up game clock
+clock = pygame.time.Clock()
+
+# set up game fonts
+font = pygame.font.SysFont(None, 30)
+
+# set up game variables
+player_x = WINDOW_WIDTH // 2
+player_y = WINDOW_HEIGHT - 50
+player_width = 50
+player_height = 50
+player_speed = 5
+player_health = 100
+player_invincible_time = 0
+
+obstacle_widths = [50, 70, 90]
+obstacle_heights = [50, 70, 90]
+obstacle_speeds = [3, 4, 5]
+obstacle_spawn_rate = 60  # spawn an obstacle every 60 frames
+obstacles = []
+
+resource_width = 30
+resource_height = 30
+resource_speed = 2
+resource_spawn_rate = 120  # spawn a resource every 120 frames
+resources = []
+
+powerup_width = 30
+powerup_height = 30
+powerup_speed = 2
+powerup_spawn_rate = 300  # spawn a power-up every 300 frames
+powerups = []
+
+score = 0
+
+game_over = False
+game_over_font = pygame.font.SysFont(None, 50)
+
+# set up game loop
+game_running = True
+while game_running:
+
+    # handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_running = False
+
+    if game_over:
+        continue
+
+    # handle player movement
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and player_x > 0:
+        player_x -= player_speed
+    elif keys[pygame.K_RIGHT] and player_x < WINDOW_WIDTH - player_width:
+        player_x += player_speed
+    elif keys[pygame.K_UP] and player_y > 0:
+        player_y -= player_speed
+    elif keys[pygame.K_DOWN] and player_y < WINDOW_HEIGHT - player_height:
+        player_y += player_speed
+
+    # spawn obstacles and check for collisions with player
+    if random.randint(0, obstacle_spawn_rate) == 0:
+        obstacle_width = random.choice(obstacle_widths)
+        obstacle_height = random.choice(obstacle_heights)
+        obstacle_speed = random.choice(obstacle_speeds)
+        obstacle_x = random.randint(0, WINDOW_WIDTH - obstacle_width)
+        obstacle_y = -obstacle_height
+        obstacles.append(pygame.Rect(obstacle_x, obstacle_y, obstacle_width, obstacle_height))
+    for obstacle in obstacles:
+        obstacle.move_ip(0, obstacle_speed)
+        if player_invincible_time == 0 and obstacle.colliderect(pygame.Rect(player_x, player_y, player_width, player_height)):
+            player_health -= 10
+            player_invincible_time = 60
+            obstacles.remove(obstacle)
+        elif obstacle.y > WINDOW_HEIGHT:
+            obstacles.remove(obstacle)
+
+    # spawn resources and check for collisions with player
+    if random.randint(0, resource_spawn_rate) == 0:
+        resource_x = random.randint(0, WINDOW_WIDTH - resource_width)
+        resource_y = -resource_height
+        resources.append(pygame.Rect(resource_x, resource_y, resource_width, resource_height))
+    for resource in resources:
+        resource.move_ip(0, resource_speed)
+        if resource.colliderect(pygame.Rect(player_x, player_y, player_width, player
